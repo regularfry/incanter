@@ -36,7 +36,7 @@ incanter.io
 
 (defn read-dataset-from-reader
   "
-    Returns a dataset read from a file or a URL.
+    Returns a dataset read from a reader.
 
     Options:
       :delim (default \\,), other options (\\tab \\space \\|  etc)
@@ -83,7 +83,20 @@ incanter.io
 		   col-names) 
 		 parsed-data))))))))
 
-(defmulti read-dataset (fn [r & rest] (class r)))
+(defmulti read-dataset
+  "
+    Returns a dataset read from a named file or url, or a Reader.
+
+    Options:
+      :delim (default \\,), other options (\\tab \\space \\|  etc)
+      :quote (default \\\") character used for quoting strings
+      :skip (default 0) the number of lines to skip at the top of the file.
+      :header (default false) indicates the file has a header line
+      :compress-delim (default true if delim = \\space, false otherwise) means
+                      compress multiple adjacent delimiters into a single delimiter
+  "
+  (fn [r & rest] (class r)))
+
 (defmethod read-dataset String [filename & options]
 	   (apply read-dataset-from-reader (get-input-reader filename) options))
 (defmethod read-dataset java.io.Reader [from & options]
