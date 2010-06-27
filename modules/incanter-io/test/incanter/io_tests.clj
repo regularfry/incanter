@@ -46,7 +46,13 @@
 (def test-tdd-data (read-dataset 
                      (str incanter-home "data/cars.tdd") 
                      :header true 
-                     :delim \tab)) 
+                     :delim \tab))
+;; read in a dataset from a supplied reader rather than a location string
+(def test-read-csv-data (read-dataset
+			 (get-input-reader (str incanter-home "data/cars.csv"))
+			 :header true))
+
+
 ;; read in the iris dataset from a space delimited file 
 (def iris-data (read-dataset 
                  (str incanter-home "data/iris.dat") 
@@ -86,7 +92,8 @@
   (doseq [[name cars-dataset]
 	  [["dat" test-data]
 	   ["csv" test-csv-data]
-	   ["tdd" test-tdd-data]]]
+	   ["tdd" test-tdd-data]
+	   ["read-csv" test-read-csv-data]]]
     (is (= [:speed :dist] (:column-names cars-dataset)) (str "Reading column names for " name " failed"))
     (is (= 50 (count (:rows cars-dataset)))) (str "Reading rows for " name " failed"))
 

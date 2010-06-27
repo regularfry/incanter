@@ -34,8 +34,7 @@ incanter.io
       (try (Double/parseDouble value)
         (catch NumberFormatException _ value)))))
 
-
-(defn read-dataset
+(defn read-dataset-from-reader
   "
     Returns a dataset read from a file or a URL.
 
@@ -47,7 +46,7 @@ incanter.io
       :compress-delim (default true if delim = \\space, false otherwise) means
                       compress multiple adjacent delimiters into a single delimiter
   "
-  ([filename & options]
+  ([raw-reader & options]
    (let [opts (when options (apply assoc {} options))
          delim (or (:delim opts) \,) ; comma delim default
          quote-char (or (:quote opts) \")
@@ -57,10 +56,10 @@ incanter.io
          compress-delim? (or (:compress-delim opts)
                              (if (= delim \space) true false))]
      (with-open [reader ^CSVReader (CSVReader.
-                    (get-input-reader filename)
-                    delim
-                    quote-char
-                    skip)]
+				    raw-reader
+				    delim
+				    quote-char
+				    skip)]
        (let [data-lines (map seq (seq (.readAll reader)))
              raw-data (filter #(> (count (filter (fn [field] (not= field "")) %)) 0) 
 			      (if compress-delim? 
@@ -84,7 +83,11 @@ incanter.io
 		   col-names) 
 		 parsed-data))))))))
 
-
+(defmulti read-dataset (fn [r & rest] (class r)))
+(defmethod read-dataset String [filename & options]
+	   (apply read-dataset-from-reader (get-input-reader filename) options))
+(defmethod read-dataset java.io.Reader [from & options]
+	   (apply read-dataset-from-reader from options))
 
 
 (defmethod save incanter.Matrix [mat filename & options]
